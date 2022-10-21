@@ -3,28 +3,10 @@
     "token": "5761882132:AAE4gsvx1kr3CekVbeaQSlfUsU_IY35xrQM"
   },
   "database": {
-    "user": "chiochio",
-    "password": "chiochio",
-    "database": "chiochiobot_db",
+    "user": "postgres",
+    "password": "root",
+    "database": "chiochio_db",
     "host": "localhost",
     "port": 5432
-  },
-  "Admin": [
-    "@RodionPushkin",
-    "@alekseykoc",
-    "@communication_chio",
-    "@barsukova_yul",
-    "@yasenok05",
-    "@fertikov"
-  ],
-  "text": {
-    "notification": "Добрый день, уважаемый %%user%%\n\nВо вложении отчет по продажам за %%month%%.\n\n\nС наилучшими пожеланиями, Служба Бизнес Анализа ЧИО ЧИО",
-    "helpModerator" : "Основные команды бота:\n1. /send - отправляет сообщение всем пользователям, если в сообщении написать %%user%%, то бот вместо этого подставит имя ИП\n2. /generate - генерирует специальный код, для авторизации чата\n3. /sendanalytics - скачивает файлы с хранилища и отправляет по нужным чатам",
-    "helpAll" : "/",
-    "startModerator" : "こんにちは (Здравствуйте)\nя Бот службы бизнес анализа chio chio,\nтут вы, как менеджер, сможете создавать рассылку и многое другое",
-    "startAll" : "こんにちは (Здравствуйте)\nя Бот службы бизнес анализа chio chio,\nя буду уведомлять вас о новостях, а также предоставлять отчет",
-    "startNotReg" : "Я вижу, что этот чат не зарегистрирован у меня в системе, для регистрации напишите команду /reg",
-    "dontHavePermission" : "У вас недостаточно прав, для этой команды",
-    "chatNotPublic" : "Данная команда доступна только внутри чата!"
   }
 }

@@ -1,41 +1,148 @@
-const {Scenes,Markup} = require('telegraf')
+const {Scenes, Markup} = require('telegraf')
 const config = require('../config.json')
 const md5 = require("md5");
 const db = require('../database')
-let message = null;
+let message = {};
 module.exports = new Scenes.WizardScene(
     'generate',
     async (ctx) => {
         try {
-            ctx.replyWithHTML(`Введите название организации (как имя файла для отправки)`,Markup.removeKeyboard()).then(()=>{
-                ctx.replyWithHTML(`Напоминание: По этому имени бот будет искать файлы и отправлять в нужный чат`)
+            global.message.push({
+                callback: async () => {
+                    ctx.replyWithHTML(`Введите название организации (как имя файла для отправки)`, Markup.keyboard([[{text: "Отменить"}]]).resize().oneTime()).then(() => {
+                        global.message.push({
+                            callback: async () => {
+                                ctx.replyWithHTML(`Напоминание: По этому имени бот будет искать файлы и отправлять в нужный чат`)
+                            }
+                        })
+                    })
+                }
             })
-            ctx.state.message = null
             ctx.wizard.next()
-        } catch (err){
+        } catch (err) {
             console.log(err)
         }
     },
     async (ctx) => {
         try {
-            if(ctx.message.text.toLowerCase() == "да"){
-                if(message){
-                    ctx.replyWithHTML(`Скопируйте сообщение ниже и отправьте нужному клиенту`).then(()=>{
-                        db.query(`INSERT INTO "Chat" (username, code) VALUES ('${message}', '${md5(message)}')`).then(()=>{
-                            ctx.replyWithHTML(`Ваш код: ${md5(message)}`,Markup.removeKeyboard())
-                            ctx.scene.leave()
+            if(ctx.message?.text.toLowerCase() == "отменить"){
+                global.message.push({
+                    callback: async () => {
+                        return await ctx.replyWithHTML('Вы отменили действие!',Markup.removeKeyboard())
+                    }
+                })
+                ctx.scene.leave()
+                global.message.push({
+                    callback: async () => {
+                        return await ctx.replyWithHTML('Меню', Markup.inlineKeyboard([
+                            [{text: 'Инфо', callback_data: 'menu-info'}],
+                            [{text: 'Сгенерировать код', callback_data: 'menu-generate'}],
+                            [{text: 'Рассылка', callback_data: 'menu-send'}]
+                        ]).resize())
+                    }
+                })
+            }else if (ctx.message.text.toLowerCase() == "да") {
+                if (message.title) {
+                    global.message.push({
+                        callback: async () => {
+                            ctx.replyWithHTML(`Введите обращение к организации`, Markup.keyboard([[{text: "Отменить"}]]).resize().oneTime()).then(() => {
+                                global.message.push({
+                                    callback: async () => {
+                                        ctx.replyWithHTML(`Напоминание: Некоторые сообщения будут включать это обращение`)
+                                    }
+                                })
+                            })
+                        }
+                    })
+                    ctx.wizard.next()
+                }
+            }  else if (ctx.message.text.toLowerCase() == "нет") {
+                global.message.push({
+                    callback: async () => {
+                        ctx.replyWithHTML(`Введите название организации (как имя файла для отправки)`, Markup.keyboard([[{text: "Отменить"}]]).resize().oneTime()).then(() => {
+                            global.message.push({
+                                callback: async () => {
+                                    ctx.replyWithHTML(`Напоминание: По этому имени бот будет искать файлы и отправлять в нужный чат`)
+                                }
+                            })
                         })
+                    }
+                })
+            }
+            else {
+                message.title = ctx.message.text
+                global.message.push({
+                    callback: async () => {
+                        ctx.replyWithHTML(`Вы ввели: "${message.title}", проверьте на точность, всё верно?`, Markup.keyboard([['Нет', 'Да'],[{text: "Отменить"}]]).resize().oneTime())
+                    }
+                })
+            }
+        } catch (err) {
+            console.log(err)
+        }
+    },
+    async (ctx) => {
+        try {
+            if(ctx.message?.text.toLowerCase() == "отменить"){
+                global.message.push({
+                    callback: async () => {
+                        return await ctx.replyWithHTML('Вы отменили действие!',Markup.removeKeyboard())
+                    }
+                })
+                ctx.scene.leave()
+                global.message.push({
+                    callback: async () => {
+                        return await ctx.replyWithHTML('Меню', Markup.inlineKeyboard([
+                            [{text: 'Инфо', callback_data: 'menu-info'}],
+                            [{text: 'Сгенерировать код', callback_data: 'menu-generate'}],
+                            [{text: 'Рассылка', callback_data: 'menu-send'}]
+                        ]).resize())
+                    }
+                })
+            }else if (ctx.message.text.toLowerCase() == "да") {
+                if (message.appeal) {
+                    global.message.push({
+                        callback: async () => {
+                            return await
+                                ctx.replyWithHTML(`Скопируйте сообщение ниже и отправьте нужному клиенту`, Markup.removeKeyboard()).then(() => {
+                                    db.query(`INSERT INTO chat (title, code,appeal) VALUES ('${message.title}', '${md5(message.title+new Date())}',${message?.appeal ? "'"+message.appeal+"'" : "null"})`).then(() => {
+                                        ctx.replyWithHTML(`Ваш код: ${md5(message)}`)
+                                        ctx.scene.leave()
+                                    })
+                                })
+                        }
+                    })
+                    global.message.push({
+                        callback: async () => {
+                            return await ctx.replyWithHTML('Меню', Markup.inlineKeyboard([
+                                [{text: 'Инфо', callback_data: 'menu-info'}],
+                                [{text: 'Сгенерировать код', callback_data: 'menu-generate'}],
+                                [{text: 'Рассылка', callback_data: 'menu-send'}]
+                            ]).resize())
+                        }
                     })
                 }
-            }else if(ctx.message.text.toLowerCase() == "нет"){
-                ctx.replyWithHTML(`Введите название организации (как имя файла для отправки)`,Markup.removeKeyboard()).then(()=>{
-                    ctx.replyWithHTML(`Напоминание: По этому имени бот будет искать файлы и отправлять в нужный чат`)
+            }  else if (ctx.message.text.toLowerCase() == "нет") {
+                global.message.push({
+                    callback: async () => {
+                        ctx.replyWithHTML(`Введите обращение к организации`, Markup.keyboard([[{text: "Отменить"}]]).resize().oneTime()).then(() => {
+                            global.message.push({
+                                callback: async () => {
+                                    ctx.replyWithHTML(`Напоминание: Некоторые сообщения будут включать это обращение`)
+                                }
+                            })
+                        })
+                    }
                 })
-            }else{
-                message = ctx.message.text
-                ctx.replyWithHTML(`Вы ввели: "${message}", проверьте на точность, всё верно?`,Markup.keyboard(['Нет','Да']))
+            } else {
+                message.appeal = ctx.message.text
+                global.message.push({
+                    callback: async () => {
+                        ctx.replyWithHTML(`Вы ввели: "${message.appeal}", проверьте на точность, всё верно?`, Markup.keyboard([['Нет', 'Да'],[{text: "Отменить"}]]).resize().oneTime())
+                    }
+                })
             }
-        } catch (err){
+        } catch (err) {
             console.log(err)
         }
     },

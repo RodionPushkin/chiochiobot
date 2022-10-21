@@ -1,66 +1,61 @@
-const {Scenes,Markup} = require('telegraf')
+const {Scenes, Markup} = require('telegraf')
 const config = require('../config.json')
 const notification = require("../lib/notification");
+const db = require('../database')
+const fs = require('fs')
+let path = String(__dirname).split(`\\`)
+path.pop()
+path = path.join('\\')+"\\files"
 let message = null;
-module.exports = new Scenes.WizardScene(
-    'sendMessage',
-    async (ctx) => {
-        try {
-            ctx.replyWithHTML(`Введите сообщение`,Markup.removeKeyboard())
-            ctx.state.message = null
-            ctx.wizard.next()
-        } catch (err){
-            console.log(err)
-        }
-    },
-    async (ctx) => {
-        try {
-            if(ctx.message?.text?.toLowerCase() == "да"){
-                ctx.replyWithHTML(`Сообщение отправлено!`,Markup.removeKeyboard())
-                if(message.photo && message.photo[0]?.file_id){
-                    await notification.send((item)=>{
-                        // if(message.text){
-                        //     ctx.telegram.sendPhoto(Number(item.tgid), message.photo[0].file_id, {caption: message.text.replace('%%user%%',item.username).replace('%%month%%',new Date().toLocaleString('ru', { month: 'long' }))})
-                        // }else{
-                        //     ctx.telegram.sendPhoto(Number(item.tgid), message.photo[0].file_id)
-                        // }
-                    })
-                }else if(message.document && message.document.file_id){
-                    await notification.send((item)=>{
-                        // if(message.text){
-                        //     ctx.telegram.sendDocument(Number(item.tgid), message.document.file_id, {caption: message.text.replace('%%user%%',item.username).replace('%%month%%',new Date().toLocaleString('ru', { month: 'long' }))})
-                        // }else{
-                        //     ctx.telegram.sendDocument(Number(item.tgid), message.document.file_id)
-                        // }
-                    })
-                }else{
-                    await notification.send((item)=>{
-                        // ctx.telegram.sendMessage(Number(item.tgid),message.text.replace('%%user%%',item.username).replace('%%month%%',new Date().toLocaleString('ru', { month: 'long' })))
-                    })
-                }
-                ctx.scene.leave()
-            }else if(ctx.message?.text?.toLowerCase() == "нет"){
-                ctx.replyWithHTML(`Введите сообщение`,Markup.removeKeyboard())
-            }else{
-                message = {
-                    text: ctx.message.text ? ctx.message.text : ctx.message.caption ? ctx.message.caption : undefined,
-                    document: ctx.message.document,
-                    photo: ctx.message.photo
-                }
-                if(message.photo && message.photo[0]?.file_id){
-                    await ctx.replyWithHTML(`Проверьте ваше сообщение на точность, всё ли верно?`,Markup.keyboard(['Нет','Да'])).then(async ()=>{
-                        await ctx.replyWithPhoto(message.photo[0].file_id, {caption: message.text})
-                    })
-                }else if(message.document && message.document.file_id){
-                    await ctx.replyWithHTML(`Проверьте ваше сообщение на точность, всё ли верно?`,Markup.keyboard(['Нет','Да'])).then(async ()=>{
-                        await ctx.replyWithDocument(message.document.file_id, {caption: message.text})
-                    })
-                }else{
-                    await ctx.replyWithHTML(`Вы ввели: "${message.text}", проверьте на точность, всё ли верно?`,Markup.keyboard(['Нет','Да']))
-                }
+module.exports = new Scenes.WizardScene('sendMessage', async (ctx) => {
+    try {
+        global.message.push({
+            callback: async () => {
+                ctx.replyWithHTML(`Вы желаете сделать рассылку по папкам или новое общее сообщение?`, Markup.keyboard([['Рассылка по папкам','Общее сообщение'],['Отменить']]).oneTime().resize())
             }
-        } catch (err){
-            console.log(err)
+        })
+        ctx.state.message = null
+        ctx.wizard.next()
+    } catch (err) {
+        console.log(err)
+    }
+}, async (ctx) => {
+    try {
+        if (ctx.message?.text?.toLowerCase() == "рассылка по папкам") {
+            let buttons = []
+            fs.readdir(path, (err, files) => {
+                let filesArray = files.filter(item=> item != 'DEFAULT')
+                for (let i = 0; i < filesArray.length; i++) {
+                    let file = filesArray[i]
+                    buttons.push([{text: file, callback_data: file}])
+                    if (i == filesArray.length - 1) {
+                        global.message.push({
+                            callback: async () => {
+                                ctx.replyWithHTML(`Пожалуйста выберите папку:`, Markup.inlineKeyboard(buttons))
+                                ctx.scene.leave()
+                            }
+                        })
+                    }
+                }
+            })
         }
-    },
-)
+        else if(ctx.message?.text?.toLowerCase() == "общее сообщение"){
+            ctx.scene.leave()
+            ctx.scene.enter('sendNewMessage')
+        }
+        else if(ctx.message?.text?.toLowerCase() == "отменить"){
+            ctx.scene.leave()
+            global.message.push({
+                callback: async () => {
+                    return await ctx.replyWithHTML('Меню', Markup.inlineKeyboard([
+                        [{text: 'Инфо', callback_data: 'menu-info'}],
+                        [{text: 'Сгенерировать код', callback_data: 'menu-generate'}],
+                        [{text: 'Рассылка', callback_data: 'menu-send'}]
+                    ]).resize())
+                }
+            })
+        }
+    } catch (err) {
+        console.log(err)
+    }
+})
