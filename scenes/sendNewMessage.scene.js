@@ -1,6 +1,4 @@
 const {Scenes, Markup} = require('telegraf')
-const config = require('../config.json')
-const notification = require("../lib/notification");
 const db = require("../database");
 let message = null;
 module.exports = new Scenes.WizardScene(

@@ -1,5 +1,4 @@
 const {Scenes, Markup} = require('telegraf')
-const config = require('../config.json')
 const md5 = require("md5");
 const db = require('../database')
 let message = {};
@@ -100,7 +99,7 @@ module.exports = new Scenes.WizardScene(
                 })
             } else if (ctx.message.text.toLowerCase() == "да" || ctx.message.text.toLowerCase() == "пропустить") {
                 if (message.appeal || message.title) {
-                    const code = md5(message.title+new Date())
+                    const code = md5(message.title + new Date())
                     global.message.push({
                         callback: async () => {
                             return await

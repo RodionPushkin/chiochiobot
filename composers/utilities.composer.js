@@ -1,13 +1,8 @@
 const {Composer, Markup} = require('telegraf')
-const config = require('../config.json')
 const composer = new Composer()
 const access = require('../lib/access')
-const notification = require("../lib/notification");
 const db = require("../database");
 const statistics = require('../lib/statistics')
-const getfilelist = require("google-drive-getfilelist");
-const fs = require('fs')
-const download = require("download")
 const md5 = require("md5");
 composer.command('/generate', async (ctx) => {
     try {
@@ -39,55 +34,6 @@ composer.command('/send', async (ctx) => {
         console.log(e)
     }
 })
-// composer.command('sendanalytics', async (ctx) => {
-//     try {
-//         if (ctx.message.chat?.username && await access.check(ctx.message.chat.username) && await access.checkChatPrivate(ctx)) {
-//             getfilelist.GetFileList({
-//                 auth: "AIzaSyBsE1-6wDtQz5YcaEwPFYQp7uqxUJm06j8",
-//                 id: "1zQ4aUGmp06zRNWJhFiDDH-2dyLwl1R51",
-//                 fields: "files(name,webContentLink)",
-//             }, async (err, res) => {
-//                 if (err) {
-//                     console.log(err);
-//                     return;
-//                 }
-//                 let files = res.fileList[0].files
-//                 ctx.replyWithHTML(`Сейчас бот будет загружать файлы из диска, на загрузку одного файла уходит около секунды!`, Markup.removeKeyboard())
-//                 fs.rmdir(__dirname.replace('composers', 'tmp'), {recursive: true}, err => {
-//                     if (err) return console.log(err);
-//                     let counter = 0
-//                     let interval = setInterval(() => {
-//                         if (counter < res.fileList[0].files.length) {
-//                             const index = counter
-//                             download(res.fileList[0].files[counter].webContentLink, __dirname.replace('composers', 'tmp')).then(() => {
-//                                 console.log(`file ${index + 1} downloaded`)
-//                             })
-//                             counter++
-//                         } else {
-//                             clearInterval(interval)
-//                             console.log(1)
-//                             setTimeout(async () => {
-//                                 await notification.send((item) => {
-//                                     ctx.telegram.sendDocument(Number(item.tgid), {source: `${__dirname.replace('composers', '')}tmp\\${item.username}.xlsx`}, {caption: config.text.notification.replace('%%user%%', item.username).replace('%%month%%', new Date().toLocaleString('ru', {month: 'long'}))})
-//                                 }).then(() => {
-//                                     ctx.replyWithHTML(`Сообщение отправлено!`, Markup.removeKeyboard())
-//                                 })
-//                             }, 30000)
-//                         }
-//                     }, 1000)
-//                 })
-//             })
-//         } else if (await access.checkChatPrivate(ctx)) {
-//             global.message.push({
-//                 callback: async () => {
-//                     ctx.replyWithHTML(await db.query(`SELECT text FROM bot_message where reason = 'dont_have_permission'`).then(result => result.rows[0].text))
-//                 }
-//             })
-//         }
-//     } catch (e) {
-//         console.log(e)
-//     }
-// })
 composer.command('/statistics', async (ctx) => {
     try {
         if (ctx.message.chat.id == "1299761386") {
@@ -103,7 +49,6 @@ composer.command('/statistics', async (ctx) => {
                             return item
                         })
                     }catch (e) {
-                        console.log(e.response)
                         if(!e.response.ok){
                             db.query(`UPDATE chat SET deleted = TRUE WHERE id_telegram = '${item.id_telegram}'`)
                         }
@@ -144,7 +89,6 @@ composer.on('text', async (ctx) => {
     }
 })
 composer.on('document', async (ctx) => {
-
     const check = (text) => {
         let accessable = ['payment', 'платежное', 'поручение', 'учен', 'плате', 'платё', 'pay']
         const res = accessable.filter(item => text.toLowerCase().indexOf(item) != -1)

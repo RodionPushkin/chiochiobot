@@ -1,6 +1,4 @@
 const {Scenes, Markup} = require('telegraf')
-const config = require('../config.json')
-const token = require('../config.json').bot.token
 const db = require('../database')
 module.exports = new Scenes.WizardScene(
     'signup',

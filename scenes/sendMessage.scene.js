@@ -1,12 +1,8 @@
 const {Scenes, Markup} = require('telegraf')
-const config = require('../config.json')
-const notification = require("../lib/notification");
-const db = require('../database')
 const fs = require('fs')
 let path = String(__dirname).split(`\\`)
 path.pop()
 path = path.join('\\')+"\\files"
-let message = null;
 module.exports = new Scenes.WizardScene('sendMessage', async (ctx) => {
     try {
         global.message.push({

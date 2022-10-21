@@ -1,6 +1,4 @@
 const {Scenes, Markup} = require('telegraf')
-const config = require('../config.json')
-const notification = require("../lib/notification");
 const db = require('../database')
 const fs = require('fs')
 let path = String(__dirname).split(`\\`)
