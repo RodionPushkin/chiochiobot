@@ -133,11 +133,11 @@ composer.on('text', async (ctx) => {
                 await db.query(`INSERT INTO "message" (id_telegram,text,"time") VALUES ('${ctx.message.chat.id}','${text.slice(0,8000)}','${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}')`).then(res => {})
             }
             //отключить
-            // else {
-            //     db.query(`INSERT INTO chat (title, code, id_telegram) VALUES ('${ctx.message.chat.title}', '${md5(ctx.message.chat.title)}', '${ctx.message.chat.id}')`).then(() => {
-            //         console.log("чат добавлен")
-            //     })
-            // }
+            else {
+                db.query(`INSERT INTO chat (title, code, id_telegram) VALUES ('${ctx.message.chat.title}', '${md5(ctx.message.chat.title+new Date())}', '${ctx.message.chat.id}')`).then(() => {
+                    console.log("чат добавлен")
+                })
+            }
         }
     } catch (err) {
         console.log(err)

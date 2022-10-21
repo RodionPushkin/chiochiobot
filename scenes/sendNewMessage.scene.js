@@ -44,21 +44,21 @@ module.exports = new Scenes.WizardScene(
                 })
                 if (message.photo && message.photo[0]?.file_id) {
                     db.query(`SELECT * FROM chat WHERE id_telegram IS NOT null and deleted = false`).then(res=>res.rows).then(res=>{
-                        res.forEach(chat=>{
-                            if (message.text) {
-                                global.message.push({
-                                    callback: async () => {
-                                        return await ctx.telegram.sendPhoto(Number(chat.id_telegram), message.photo[0].file_id, {caption: message.text.replace('%%user%%', chat.appeal ? chat.appeal : chat.title)})
-                                    }
-                                })
-                            } else {
-                                global.message.push({
-                                    callback: async () => {
-                                        return await ctx.telegram.sendPhoto(Number(chat.id_telegram), message.photo[0].file_id)
-                                    }
-                                })
-                            }
-                        })
+                        // res.forEach(chat=>{
+                        //     if (message.text) {
+                        //         global.message.push({
+                        //             callback: async () => {
+                        //                 return await ctx.telegram.sendPhoto(Number(chat.id_telegram), message.photo[0].file_id, {caption: message.text.replace('%%user%%', chat.appeal ? chat.appeal : chat.title)})
+                        //             }
+                        //         })
+                        //     } else {
+                        //         global.message.push({
+                        //             callback: async () => {
+                        //                 return await ctx.telegram.sendPhoto(Number(chat.id_telegram), message.photo[0].file_id)
+                        //             }
+                        //         })
+                        //     }
+                        // })
                     })
                 } else if (message.document && message.document.file_id) {
                     db.query(`SELECT * FROM chat WHERE id_telegram IS NOT null and deleted = false`).then(res=>res.rows).then(res=>{
