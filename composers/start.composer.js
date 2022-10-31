@@ -3,9 +3,8 @@ const composer = new Composer()
 const db = require('../database')
 const access = require('../lib/access')
 const fs = require('fs')
-let path = String(__dirname).split(`\\`)
-path.pop()
-path = path.join('\\') + "\\files"
+let path = path.join(__dirname, '../files')
+
 composer.on('callback_query',(ctx)=>{
     if(ctx.update.callback_query.data == "menu-info"){
         global.message.push({
