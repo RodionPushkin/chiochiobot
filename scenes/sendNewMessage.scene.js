@@ -18,7 +18,8 @@ module.exports = new Scenes.WizardScene(
     },
     async (ctx) => {
         try {
-            if(ctx.message?.text.toLowerCase() == "отменить"){
+            console.log(ctx.message)
+            if(ctx.message?.text?.toLowerCase() == "отменить"){
                 global.message.push({
                     callback: async () => {
                         return await ctx.replyWithHTML('Вы отменили действие!',Markup.removeKeyboard())
@@ -34,7 +35,8 @@ module.exports = new Scenes.WizardScene(
                     }
                 })
                 ctx.scene.leave()
-            }else if (ctx.message?.text?.toLowerCase() == "да") {
+            }
+            else if (ctx.message?.text?.toLowerCase() == "да") {
                 global.message.push({
                     callback: async () => {
                         return await ctx.replyWithHTML(`Сообщение отправлено!`, Markup.removeKeyboard())
@@ -97,13 +99,15 @@ module.exports = new Scenes.WizardScene(
                     }
                 })
                 ctx.scene.leave()
-            } else if (ctx.message?.text?.toLowerCase() == "нет") {
+            }
+            else if (ctx.message?.text?.toLowerCase() == "нет") {
                 global.message.push({
                     callback: async () => {
                         return await ctx.replyWithHTML(`Введите сообщение`, Markup.removeKeyboard())
                     }
                 })
-            } else {
+            }
+            else {
                 message = {
                     text: ctx.message.text ? ctx.message.text : ctx.message.caption ? ctx.message.caption : undefined,
                     document: ctx.message.document,
