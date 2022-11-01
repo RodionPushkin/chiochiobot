@@ -1,8 +1,7 @@
 const {Scenes, Markup} = require('telegraf')
 const fs = require('fs')
-let path = String(__dirname).split(`\\`)
-path.pop()
-path = path.join('\\')+"\\files"
+const path = require('path')
+let pathForFiles = path.join(__dirname, '../files')
 module.exports = new Scenes.WizardScene('sendMessage', async (ctx) => {
     try {
         global.message.push({
@@ -19,21 +18,39 @@ module.exports = new Scenes.WizardScene('sendMessage', async (ctx) => {
     try {
         if (ctx.message?.text?.toLowerCase() == "рассылка по папкам") {
             let buttons = []
-            fs.readdir(path, (err, files) => {
-                let filesArray = files.filter(item=> item != 'DEFAULT')
-                for (let i = 0; i < filesArray.length; i++) {
-                    let file = filesArray[i]
-                    buttons.push([{text: file, callback_data: file}])
-                    if (i == filesArray.length - 1) {
+            try{
+                console.log(pathForFiles)
+                fs.readdir(pathForFiles, (err, files) => {
+                    if(!err){
+                        let filesArray = files.filter(item=> item != 'DEFAULT')
+                        for (let i = 0; i < filesArray.length; i++) {
+                            let file = filesArray[i]
+                            buttons.push([{text: file, callback_data: file}])
+                            if (i == filesArray.length - 1) {
+                                global.message.push({
+                                    callback: async () => {
+                                        ctx.replyWithHTML(`Пожалуйста выберите папку:`, Markup.inlineKeyboard(buttons))
+                                        ctx.scene.leave()
+                                    }
+                                })
+                            }
+                        }
+                    }else{
                         global.message.push({
                             callback: async () => {
-                                ctx.replyWithHTML(`Пожалуйста выберите папку:`, Markup.inlineKeyboard(buttons))
-                                ctx.scene.leave()
+                                return await ctx.replyWithHTML("У меня не получилось прочитать папки!", Markup.removeKeyboard())
                             }
                         })
                     }
-                }
-            })
+                })
+            }catch (e) {
+                console.log(e)
+                global.message.push({
+                    callback: async () => {
+                        return await ctx.replyWithHTML("У меня не получилось прочитать папки!", Markup.removeKeyboard())
+                    }
+                })
+            }
         }
         else if(ctx.message?.text?.toLowerCase() == "общее сообщение"){
             ctx.scene.leave()

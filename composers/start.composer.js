@@ -39,6 +39,7 @@ composer.on('callback_query',(ctx)=>{
                 }
             })
         }catch (e) {
+            console.log(e)
             global.message.push({
                 callback: async () => {
                     return await ctx.replyWithHTML("У меня не получилось прочитать папки!", Markup.removeKeyboard())
