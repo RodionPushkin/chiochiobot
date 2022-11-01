@@ -27,15 +27,24 @@ composer.on('callback_query',(ctx)=>{
     }else if(ctx.update.callback_query.data == "menu-generate"){
         ctx.scene.enter('generate')
     }else{
-        fs.readdir(pathForFiles, (err, files) => {
-            let filesArray = files.filter(item=> item != 'DEFAULT')
-            for (let i = 0; i < filesArray.length; i++) {
-                if(ctx.update.callback_query.data == filesArray[i]){
-                    ctx.state.folder = filesArray[i]
-                    ctx.scene.enter('sendFiles')
+        try {
+            console.log("files",pathForFiles)
+            fs.readdir(pathForFiles, (err, files) => {
+                let filesArray = files.filter(item=> item != 'DEFAULT')
+                for (let i = 0; i < filesArray.length; i++) {
+                    if(ctx.update.callback_query.data == filesArray[i]){
+                        ctx.state.folder = filesArray[i]
+                        ctx.scene.enter('sendFiles')
+                    }
                 }
-            }
-        })
+            })
+        }catch (e) {
+            global.message.push({
+                callback: async () => {
+                    return await ctx.replyWithHTML("У меня не получилось прочитать папки!", Markup.removeKeyboard())
+                }
+            })
+        }
     }
     ctx.deleteMessage(ctx.update.callback_query.message.message_id)
 })
