@@ -3,7 +3,8 @@ const composer = new Composer()
 const db = require('../database')
 const access = require('../lib/access')
 const fs = require('fs')
-let path = path.join(__dirname, '../files')
+const path = require('path')
+let pathForFiles = path.join(__dirname, '../files')
 
 composer.on('callback_query',(ctx)=>{
     if(ctx.update.callback_query.data == "menu-info"){
@@ -26,7 +27,7 @@ composer.on('callback_query',(ctx)=>{
     }else if(ctx.update.callback_query.data == "menu-generate"){
         ctx.scene.enter('generate')
     }else{
-        fs.readdir(path, (err, files) => {
+        fs.readdir(pathForFiles, (err, files) => {
             let filesArray = files.filter(item=> item != 'DEFAULT')
             for (let i = 0; i < filesArray.length; i++) {
                 if(ctx.update.callback_query.data == filesArray[i]){
