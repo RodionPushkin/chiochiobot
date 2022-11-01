@@ -40,7 +40,6 @@ module.exports = new Scenes.WizardScene('sendMessage', async (ctx) => {
             ctx.scene.enter('sendNewMessage')
         }
         else if(ctx.message?.text?.toLowerCase() == "отменить"){
-            ctx.scene.leave()
             global.message.push({
                 callback: async () => {
                     return await ctx.replyWithHTML('Меню', Markup.inlineKeyboard([
@@ -50,6 +49,7 @@ module.exports = new Scenes.WizardScene('sendMessage', async (ctx) => {
                     ]).resize())
                 }
             })
+            ctx.scene.leave()
         }
     } catch (err) {
         console.log(err)
