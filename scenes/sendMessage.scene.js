@@ -36,6 +36,7 @@ module.exports = new Scenes.WizardScene('sendMessage', async (ctx) => {
                             }
                         }
                     }else{
+                        console.log(err)
                         global.message.push({
                             callback: async () => {
                                 return await ctx.replyWithHTML("У меня не получилось прочитать папки!", Markup.removeKeyboard())

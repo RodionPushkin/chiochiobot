@@ -30,6 +30,7 @@ composer.on('callback_query',(ctx)=>{
         try {
             console.log("files",pathForFiles)
             fs.readdir(pathForFiles, (err, files) => {
+                if(err) console.log(err)
                 let filesArray = files.filter(item=> item != 'DEFAULT')
                 for (let i = 0; i < filesArray.length; i++) {
                     if(ctx.update.callback_query.data == filesArray[i]){
