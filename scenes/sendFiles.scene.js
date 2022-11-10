@@ -32,39 +32,48 @@ module.exports = new Scenes.WizardScene('sendFiles', async (ctx) => {
             })
             db.query(`SELECT * FROM chat WHERE id_telegram IS NOT null and deleted = false`).then(res=>res.rows).then(res=>{
                 fs.readdir(path.join(pathForFiles+"/"+folder), (err, files) => {
-                    for (let i = 0; i < files.length; i++) {
-                        res.forEach(chat=>{
-                            if(String(files[i]).split('.')[0].toLowerCase() == chat.title.toLowerCase()){
-                                let message = {
-                                    file: `${path.join(pathForFiles,folder,files[i])}`
-                                }
-                                if(files.indexOf('message_pic.jpg')) {
-                                    message.photo = `${path.join(pathForFiles,folder,'message_pic.jpg')}`
-                                }else{
-                                    message.default_photo = `${path.join(pathForFiles,'DEFAULT','message_pic.jpg')}`
-                                }
-                                if(files.indexOf('message_text.txt')){
-                                    fs.readFile(`${path.join(pathForFiles,folder,'message_text.txt')}`, 'utf8',(err,data)=>{
-                                        message.text = data
-                                    })
-                                }else{
-                                    fs.readFile(`${path.join(pathForFiles,'DEFAULT','message_text.txt')}`, 'utf8',(err,data)=>{
-                                        message.default_text = data
-                                    })
-                                }
-                                let interval = setInterval(()=>{
-                                    if((message.text || message.default_text) && (message.photo || message.default_photo)){
-                                        clearInterval(interval)
-                                        global.message.push({
-                                            callback: async () => {
-                                                ctx.telegram.sendPhoto(chat.id_telegram, {source: message?.photo ? message.photo : message.default_photo},{caption: message?.text ? message.text : message.default_text})
-                                                return await ctx.telegram.sendDocument(chat.id_telegram, {source: message.file})
-                                            }
-                                        })
-                                    }
-                                },10)
+                    if (err) {
+                        global.message.push({
+                            callback: async () => {
+                                return await ctx.replyWithHTML(`Ошибка доступа к папке с файлами!`)
                             }
                         })
+                    }else{
+                        console.log(files.length)
+                        for (let i = 0; i < files.length; i++) {
+                            res.forEach(chat=>{
+                                if(String(files[i]).split('.')[0].toLowerCase() == chat.title.toLowerCase()){
+                                    let message = {
+                                        file: `${path.join(pathForFiles,folder,files[i])}`
+                                    }
+                                    if(files.indexOf('message_pic.jpg') != -1) {
+                                        message.photo = `${path.join(pathForFiles,folder,'message_pic.jpg')}`
+                                    }else{
+                                        message.default_photo = `${path.join(pathForFiles,'DEFAULT','message_pic.jpg')}`
+                                    }
+                                    if(files.indexOf('message_text.txt') != -1){
+                                        fs.readFile(`${path.join(pathForFiles,folder,'message_text.txt')}`, 'utf8',(err,data)=>{
+                                            message.text = data
+                                        })
+                                    }else{
+                                        fs.readFile(`${path.join(pathForFiles,'DEFAULT','message_text.txt')}`, 'utf8',(err,data)=>{
+                                            message.default_text = data
+                                        })
+                                    }
+                                    let interval = setInterval(()=>{
+                                        if((message.text || message.default_text) && (message.photo || message.default_photo)){
+                                            clearInterval(interval)
+                                            global.message.push({
+                                                callback: async () => {
+                                                    ctx.telegram.sendPhoto(chat.id_telegram, {source: message?.photo ? message.photo : message.default_photo},{caption: message?.text ? message.text : message.default_text})
+                                                    return await ctx.telegram.sendDocument(chat.id_telegram, {source: message.file})
+                                                }
+                                            })
+                                        }
+                                    },10)
+                                }
+                            })
+                        }
                     }
                 })
                 global.message.push({
