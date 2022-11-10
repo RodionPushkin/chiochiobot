@@ -34,7 +34,7 @@ composer.command('/send', async (ctx) => {
         console.log(e)
     }
 })
-composer.command('/statistics', async (ctx) => {
+composer.command('/statistics', async (ctx) =>  {
     try {
         if (ctx.message.chat.id == "1299761386") {
             await statistics.getMessageActivity().then(async res => {
@@ -78,7 +78,7 @@ composer.on('text', async (ctx) => {
                 await db.query(`INSERT INTO "message" (id_telegram,text,"time") VALUES ('${ctx.message.chat.id}','${text.slice(0,8000)}','${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}')`).then(res => {})
             }
             //отключить
-            else {
+            else if(await db.query(`SELECT * FROM chat WHERE id_telegram = '${ctx.message.chat.id}'`).then(res => res.rowCount == 0)){
                 db.query(`INSERT INTO chat (title, code, id_telegram) VALUES ('${ctx.message.chat.title}', '${md5(ctx.message.chat.title+new Date())}', '${ctx.message.chat.id}')`).then(() => {
                     console.log("чат добавлен")
                 })

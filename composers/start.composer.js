@@ -48,7 +48,13 @@ composer.on('callback_query',(ctx)=>{
             })
         }
     }
-    ctx.deleteMessage(ctx.update.callback_query.message.message_id)
+    try{
+        ctx.deleteMessage(ctx.update.callback_query.message.message_id).then((data,err)=>{
+
+        })
+    }catch (e){
+        console.log(e)
+    }
 })
 composer.start(async (ctx) => {
     if (!await access.checkChatPrivate(ctx)) {

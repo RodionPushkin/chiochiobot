@@ -30,7 +30,7 @@ module.exports = new Scenes.WizardScene('sendFiles', async (ctx) => {
                     return await ctx.replyWithHTML(`Напоминание: во время отправки файлов, бот ответит на ваши сообщения после отправки`,Markup.removeKeyboard())
                 }
             })
-            db.query(`SELECT * FROM chat WHERE id_telegram IS NOT null and deleted = false`).then(res=>res.rows).then(res=>{
+            db.query(`SELECT DISTINCT "id_telegram", "deleted","title","appeal" FROM chat WHERE id_telegram IS NOT null and deleted = false`).then(res=>res.rows).then(res=>{
                 fs.readdir(path.join(pathForFiles+"/"+folder), (err, files) => {
                     if (err) {
                         global.message.push({
@@ -65,8 +65,15 @@ module.exports = new Scenes.WizardScene('sendFiles', async (ctx) => {
                                             clearInterval(interval)
                                             global.message.push({
                                                 callback: async () => {
-                                                    ctx.telegram.sendPhoto(chat.id_telegram, {source: message?.photo ? message.photo : message.default_photo},{caption: message?.text ? message.text : message.default_text})
-                                                    return await ctx.telegram.sendDocument(chat.id_telegram, {source: message.file})
+                                                    try{
+                                                        return await ctx.telegram.sendPhoto(chat.id_telegram, {source: message?.photo ? message.photo : message.default_photo},{caption: message?.text ? message.text : message.default_text}).then(async (data,err)=>{
+                                                            if(!err){
+                                                                return await ctx.telegram.sendDocument(chat.id_telegram, {source: message.file})
+                                                            }
+                                                        })
+                                                    }catch (e) {
+                                                        console.log(e)
+                                                    }
                                                 }
                                             })
                                         }
